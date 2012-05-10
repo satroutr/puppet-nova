@@ -86,7 +86,8 @@ class nova(
 
   package { "python-nova":
     ensure  => present,
-    require => Package["python-greenlet"]
+    require => Package["python-greenlet"],
+    notify => Exec[nova-db-sync]
   }
 
   package { 'nova-common':
@@ -119,8 +120,15 @@ class nova(
   # this is potentially constantly resyncing a central DB
   exec { "nova-db-sync":
     command     => "/usr/bin/nova-manage db sync",
-    refreshonly => "true",
-    require     => [Package['nova-common'], Nova_config['sql_connection']],
+    require => [File['/etc/nova/nova.conf'],
+	            Package[python-nova],
+	            Nova_config['sql_connection']
+	            Package[$::nova::params::common_package_name]],
+	refreshonly => "true",
+  }
+
+  Nova_config <| title == 'sql_connection' |> {
+    notify +> Exec["nova-db-sync"]
   }
 
   # used by debian/ubuntu in nova::network_bridge to refresh
