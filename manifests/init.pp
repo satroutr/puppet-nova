@@ -86,7 +86,8 @@ class nova(
 
   package { "python-nova":
     ensure  => present,
-    require => Package["python-greenlet"]
+    require => Package["python-greenlet"],
+    notify => Exec[nova-db-sync]
   }
 
   package { 'nova-common':
@@ -113,13 +114,21 @@ class nova(
   }
   file { '/etc/nova/nova.conf':
     mode  => '0640',
+    notify => Exec[nova-db-sync]
   }
 
   # I need to ensure that I better understand this resource
   # this is potentially constantly resyncing a central DB
   exec { "nova-db-sync":
     command     => "/usr/bin/nova-manage db sync",
+    require => [File['/etc/nova/nova.conf'],
+		Package[python-nova],
+		Package[$::nova::params::common_package_name]],
     refreshonly => "true",
+  }
+
+  Nova_config <| title == 'sql_connection' |> {
+    notify +> Exec["nova-db-sync"]
   }
 
   # used by debian/ubuntu in nova::network_bridge to refresh

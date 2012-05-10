@@ -13,16 +13,6 @@ class nova::api(
 
   $auth_uri = "${auth_protocol}://${auth_host}:${auth_port}/v2.0"
 
-  # TODO what exactly is this for?
-  # This resource is adding a great deal of comlexity to the overall
-  # modules. Removing it would be great
-  exec { 'initial-db-sync':
-    command     => '/usr/bin/nova-manage db sync',
-    refreshonly => true,
-    require     => [Package[$::nova::params::common_package_name], Nova_config['sql_connection']],
-  }
-
-  Package<| title == 'nova-api' |> -> Exec['initial-db-sync']
   Package<| title == 'nova-api' |> -> File['/etc/nova/api-paste.ini']
 
 
