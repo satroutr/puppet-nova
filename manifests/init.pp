@@ -122,9 +122,7 @@ class nova(
     command     => "/usr/bin/nova-manage db sync",
     require => [File['/etc/nova/nova.conf'],
 	            Package[python-nova],
-	            Nova_config['sql_connection'],
 	            Package[$::nova::params::common_package_name]],
-	refreshonly => "true",
   }
 
   Nova_config <| title == 'sql_connection' |> {
