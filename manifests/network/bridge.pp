@@ -1,8 +1,7 @@
 # bridge.pp
-define nova::network::bridge ( $ip, $netmask = "255.255.255.0" )
+define nova::network::bridge ( $ip, $netmask = "255.255.255.0")
 {
   case $::operatingsystem {
-
     'debian', 'ubuntu': {
       $context = "/files/etc/network/interfaces"
       augeas { "bridge_${name}":
