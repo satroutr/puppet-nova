@@ -19,5 +19,6 @@ define nova::manage::network (
     network      => $network,
     num_networks => $num_networks,
     project      => $project
+    project      => $project,
   }
 }
