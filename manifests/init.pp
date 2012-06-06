@@ -49,7 +49,8 @@ class nova(
   $verbose = false,
   $periodic_interval = '60',
   $report_interval = '10',
-  $root_helper = $::nova::params::root_helper
+  $root_helper = $::nova::params::root_helper,
+  $prevent_db_sync = false
 ) inherits nova::params {
 
   # all nova_config resources should be applied
@@ -118,11 +119,17 @@ class nova(
 
   # I need to ensure that I better understand this resource
   # this is potentially constantly resyncing a central DB
-  exec { "nova-db-sync":
-    command     => "/usr/bin/nova-manage db sync",
-    require => [File['/etc/nova/nova.conf'],
-	            Package[python-nova],
-	            Package[$::nova::params::common_package_name]],
+  if ($prevent_db_sync) {
+    exec { "nova-db-sync":
+      command => "/bin/true"
+    }
+  } else {
+    exec { "nova-db-sync":
+      command     => "/usr/bin/nova-manage db sync",
+      require => [File['/etc/nova/nova.conf'],
+                  Package[python-nova],
+                  Package[$::nova::params::common_package_name]],
+    }
   }
 
   Nova_config <| title == 'sql_connection' |> {
