@@ -11,12 +11,14 @@ class nova::compute::libvirt (
     package { "nova-compute-${libvirt_type}":
       ensure => present,
       before => Package['nova-compute'],
+      tag    => "openstack",
     }
   }
 
   package { 'libvirt':
     name   => $::nova::params::libvirt_package_name,
     ensure => present,
+    tag    => "openstack",
   }
 
   service { 'libvirt' :

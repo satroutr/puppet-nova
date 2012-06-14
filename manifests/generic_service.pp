@@ -41,6 +41,7 @@ define nova::generic_service(
       name   => $package_name,
       ensure => $ensure_package,
       notify => Service[$nova_title],
+      tag    => "openstack",
     }
   }
 
