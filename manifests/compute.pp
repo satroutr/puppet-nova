@@ -32,6 +32,7 @@ class nova::compute(
   package { 'bridge-utils':
     ensure => present,
     before => Nova::Generic_service['compute'],
+    tag    => "openstack",
   }
 
   nova::generic_service { 'compute':

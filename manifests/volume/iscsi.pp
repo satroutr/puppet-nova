@@ -37,6 +37,7 @@ class nova::volume::iscsi (
       package { 'tgt':
         name   => $::nova::params::tgt_package_name,
         ensure => present,
+        tag    => "openstack",
       }
       service { 'tgtd':
         name     => $::nova::params::tgt_service_name,

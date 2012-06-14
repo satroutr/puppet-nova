@@ -19,6 +19,7 @@ class nova::vncproxy(
   package { 'python-numpy':
     name   => $::nova::params::numpy_package_name,
     ensure => present,
+    tag    => "openstack",
   }
 
   nova::generic_service { 'vncproxy':

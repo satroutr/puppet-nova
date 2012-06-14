@@ -73,10 +73,12 @@ class nova(
   # they should be handled as package deps by the OS
   package { 'python':
     ensure => present,
+    tag    => "openstack",
   }
   package { 'python-greenlet':
     ensure => present,
     require => Package['python'],
+    tag    => "openstack",
   }
 
   class { 'nova::utilities': }
@@ -88,13 +90,15 @@ class nova(
   package { "python-nova":
     ensure  => present,
     require => Package["python-greenlet"],
-    notify => Exec[nova-db-sync]
+    notify => Exec[nova-db-sync],
+    tag    => "openstack",
   }
 
   package { 'nova-common':
     name    => $::nova::params::common_package_name,
     ensure  => present,
-    require => [Package["python-nova"], Anchor['nova-start']]
+    require => [Package["python-nova"], Anchor['nova-start']],
+    tag    => "openstack",
   }
 
   group { 'nova':
