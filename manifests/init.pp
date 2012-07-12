@@ -126,10 +126,12 @@ class nova(
   if ($prevent_db_sync) {
     exec { "nova-db-sync":
       command => "/bin/true"
+      refreshonly => true,
     }
   } else {
     exec { "nova-db-sync":
       command     => "/usr/bin/nova-manage db sync",
+      refreshonly => true,
       require => [File['/etc/nova/nova.conf'],
                   Package[python-nova],
                   Package[$::nova::params::common_package_name]],
