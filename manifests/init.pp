@@ -125,7 +125,7 @@ class nova(
   # this is potentially constantly resyncing a central DB
   if ($prevent_db_sync) {
     exec { "nova-db-sync":
-      command => "/bin/true"
+      command => "/bin/true",
       refreshonly => true,
     }
   } else {
