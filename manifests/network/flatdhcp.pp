@@ -8,7 +8,7 @@ class nova::network::flatdhcp (
   $flat_injected       = false,
   $dhcpbridge          = '/usr/bin/nova-dhcpbridge',
   $dhcpbridge_flagfile = '/etc/nova/nova.conf',
-  $allow_same_net_traffic = false
+  $allow_same_net_traffic = true,
 ) {
 
   if $public_interface {
