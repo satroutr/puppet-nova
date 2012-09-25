@@ -33,7 +33,7 @@ class nova::params {
       $volume_service_name      = 'openstack-nova-volume'
       $special_service_provider = 'init'
       # redhat specific config defaults
-      $root_helper              = 'sudo nova-rootwrap'
+      $root_helper              = 'sudo nova-rootwrap /etc/nova/rootwrap.conf'
       $lock_path                = '/var/lib/nova/tmp'
       $nova_db_charset          = 'latin1'
     }
@@ -65,7 +65,7 @@ class nova::params {
       $volume_service_name      = 'nova-volume'
       $tgt_service_name         = 'tgt'
       # debian specific nova config
-      $root_helper              = 'sudo nova-rootwrap'
+      $root_helper              = 'sudo nova-rootwrap /etc/nova/rootwrap.conf'
       $lock_path                = '/var/lock/nova'
       $nova_db_charset          = 'utf8'
       case $::operatingsystem {
