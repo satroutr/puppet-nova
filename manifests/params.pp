@@ -67,7 +67,7 @@ class nova::params {
       # debian specific nova config
       $root_helper              = 'sudo nova-rootwrap /etc/nova/rootwrap.conf'
       $lock_path                = '/var/lock/nova'
-      $nova_db_charset          = 'utf8'
+      $nova_db_charset          = 'latin1'
       case $::operatingsystem {
         'Debian': {
           $consoleauth_package_name = 'nova-console'
