@@ -22,7 +22,17 @@ class nova::network(
   $config_overrides = {},
   $create_networks  = true,
   $ensure_package   = 'present',
-  $install_service  = true
+  $install_service  = true,
+  $network_api_class	   = 'nova.network.quantumv2.api.API',
+  $quantum_url		   = 'http://127.0.0.1:9696',
+  $quantum_auth_strategy   = 'keystone',
+  $quantum_admin_tenant_name	= 'services',
+  $quantum_admin_username	= 'quantum',
+  $quantum_admin_password	= 'quantum',
+  $quantum_admin_auth_url	= 'http://127.0.0.1:35357/v2.0',
+  $libvirt_vif_driver	   = 'nova.virt.libvirt.vif.LibvirtOpenVswitchDriver',
+  $libvirt_use_virtio_for_bridges	= 'True',
+  $host		= 'compute',
 ) {
 
   include nova::params
@@ -97,6 +107,15 @@ class nova::network(
     'nova.network.quantum.manager.QuantumManager': {
       $parameters = { fixed_range      => $fixed_range,
                       public_interface => $public_interface,
+		      network_api_class	=> $network_api_class,
+    			quantum_url => $quantum_url,
+    			quantum_auth_strategy => $quantum_auth_strategy,
+    			quantum_admin_tenant_name => $quantum_admin_tenant_name,
+    			quantum_admin_username => $quantum_admin_username,
+    			quantum_admin_password => $quantum_admin_password,
+    			quantum_admin_auth_url => $quantum_admin_auth_url,
+			libvirt_vif_driver => $libvirt_vif_driver,
+			libvirt_use_virtio_for_bridges => $libvirt_use_virtio_for_bridges,	
                     }
       $resource_parameters = merge($config_overrides, $parameters)
       $quantum_resource = { 'nova::network::quantum' => $resource_parameters }
