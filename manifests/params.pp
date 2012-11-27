@@ -48,6 +48,8 @@ class nova::params {
       $network_package_name     = 'nova-network'
       $vncproxy_package_name    = 'nova-novncproxy'
       $numpy_package_name       = 'python-numpy'
+      $novnc_package_name       = 'novnc'
+      $python_novnc_package_name = 'python-novnc'
       $objectstore_package_name = 'nova-objectstore'
       $scheduler_package_name   = 'nova-scheduler'
       $tgt_package_name         = 'tgt'
