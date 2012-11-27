@@ -59,7 +59,7 @@ class nova::params {
       $consoleauth_service_name = 'nova-consoleauth'
       $libvirt_service_name     = 'libvirt-bin'
       $network_service_name     = 'nova-network'
-      $vncproxy_service_name    = 'nova-nonovncproxy'
+      $vncproxy_service_name    = 'nova-novncproxy'
       $objectstore_service_name = 'nova-objectstore'
       $scheduler_service_name   = 'nova-scheduler'
       $volume_service_name      = 'nova-volume'
