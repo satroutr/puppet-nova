@@ -10,6 +10,7 @@ class nova::network::quantum (
   $quantum_admin_username	= 'quantum',
   $quantum_admin_password	= 'quantum',
   $quantum_admin_auth_url	= 'http://127.0.0.1:35357/v2.0',
+  $quantum_ip_overlap           = true,
   $libvirt_vif_driver	   = 'nova.virt.libvirt.vif.LibvirtOpenVswitchDriver',
   $libvirt_use_virtio_for_bridges	= 'True',
   $host		= 'compute',
@@ -22,6 +23,10 @@ class nova::network::quantum (
 
   if $quantum_host != 'localhost' {
     nova_config { 'quantum_connection_host': value => $quantum_connection_host }
+  }
+  
+  if $quantum_ip_overlap {
+    nova_config { 'firewall_driver': value => 'nova.virt.firewall.NoopFirewallDriver' }
   }
 
   nova_config { 
