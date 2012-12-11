@@ -25,8 +25,11 @@ class nova::network::quantum (
     nova_config { 'quantum_connection_host': value => $quantum_connection_host }
   }
   
-  if $quantum_ip_overlap {
+  if $quantum_ip_overlap == 'true' {
     nova_config { 'firewall_driver': value => 'nova.virt.firewall.NoopFirewallDriver' }
+  }
+  else {
+    nova_config { 'firewall_driver': value => 'nova.virt.libvirt.firewall.IptablesFirewallDriver' }
   }
 
   nova_config { 
