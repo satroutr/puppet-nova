@@ -28,6 +28,8 @@ class nova::compute::libvirt (
     require  => Package['libvirt'],
   }
 
+  File<| name == '/etc/libvirt/qemu.conf' |> ~> Service['libvirtd']
+
   nova_config { 'libvirt_type': value => $libvirt_type }
   nova_config { 'compute_driver': value => 'libvirt.LibvirtDriver' }
   nova_config { 'vncserver_listen': value => $vncserver_listen }
