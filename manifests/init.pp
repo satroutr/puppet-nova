@@ -132,7 +132,7 @@ class nova(
     require => File['/etc/nova/nova.conf'],
   }
   exec { 'nova-rootwrap-sudoers-file':
-    command => 'echo -e "nova ALL = (root) NOPASSWD: /usr/bin/nova-rootwrap /etc/nova/rootwrap.conf *\n" >> /etc/sudoers',
+    command => 'echo "nova ALL = (root) NOPASSWD: /usr/bin/nova-rootwrap /etc/nova/rootwrap.conf *" >> /etc/sudoers',
     unless => 'grep nova-rootwrap /etc/sudoers',
     path => ['/bin','/sbin','/usr/bin'],
     require => File['/etc/nova/rootwrap.conf'],
