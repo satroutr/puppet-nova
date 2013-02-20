@@ -129,8 +129,15 @@ class nova(
   file { '/etc/nova/rootwrap.conf':
     ensure => present,
     content => template('nova/rootwrap.conf.erb'),
-    require => [File['/etc/nova/nova.conf']],
+    require => File['/etc/nova/nova.conf'],
   }
+  exec { 'nova-rootwrap-sudoers-file':
+    command => 'echo -e "nova ALL = (root) NOPASSWD: /usr/bin/nova-rootwrap /etc/nova/rootwrap.conf *\n" >> /etc/sudoers',
+    unless => 'grep nova-rootwrap /etc/sudoers',
+    path => ['/bin','/sbin','/usr/bin'],
+    require => File['/etc/nova/rootwrap.conf'],
+  }
+
 
   # I need to ensure that I better understand this resource
   # this is potentially constantly resyncing a central DB
