@@ -53,7 +53,6 @@ class nova(
   $verbose = false,
   $periodic_interval = '60',
   $report_interval = '10',
-  $root_helper = $::nova::params::root_helper,
   $rootwrap_config = $::nova::params::rootwrap_config,
   $monitoring_notifications = false,
   $prevent_db_sync = false
@@ -114,15 +113,15 @@ class nova(
   }
   user { 'nova':
     ensure  => present,
-    gid     => 'nova',
+    gid   => 'nova',
     system  => true,
     require => Package['nova-common'],
   }
   file { "/etc/nova":
     ensure => directory,
-    mode => '770',
-    owner => 'nova',
-    gid   => 'root',
+    mode => '750',
+    owner => 'root',
+    group   => 'nova',
   }
   file { $logdir:
     ensure  => directory,
@@ -223,7 +222,6 @@ class nova(
     'state_path': value => $state_path;
     'lock_path': value => $lock_path;
     'service_down_time': value => $service_down_time;
-    'root_helper': value => $root_helper;
     'rootwrap_config': value => $rootwrap_config;
   }
 
