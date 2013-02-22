@@ -118,7 +118,12 @@ class nova(
     system  => true,
     require => Package['nova-common'],
   }
-
+  file { "/etc/nova":
+    ensure => directory,
+    mode => '770',
+    owner => 'nova',
+    gid   => 'root',
+  }
   file { $logdir:
     ensure  => directory,
     mode    => '0751',
@@ -129,7 +134,7 @@ class nova(
   file { '/etc/nova/rootwrap.conf':
     ensure => present,
     content => template('nova/rootwrap.conf.erb'),
-    require => File['/etc/nova/nova.conf'],
+    require => [File['/etc/nova/nova.conf'],File['/etc/nova']],
   }
   exec { 'nova-rootwrap-sudoers-file':
     command => 'echo "nova ALL = (root) NOPASSWD: /usr/bin/nova-rootwrap /etc/nova/rootwrap.conf *" >> /etc/sudoers',
