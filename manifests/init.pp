@@ -135,12 +135,6 @@ class nova(
     content => template('nova/rootwrap.conf.erb'),
     require => [File['/etc/nova/nova.conf'],File['/etc/nova']],
   }
-  exec { 'nova-rootwrap-sudoers-file':
-    command => 'echo "nova ALL = (root) NOPASSWD: /usr/bin/nova-rootwrap /etc/nova/rootwrap.conf *" >> /etc/sudoers',
-    unless => 'grep nova-rootwrap /etc/sudoers',
-    path => ['/bin','/sbin','/usr/bin'],
-    require => File['/etc/nova/rootwrap.conf'],
-  }
 
 
   # I need to ensure that I better understand this resource
