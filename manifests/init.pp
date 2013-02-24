@@ -70,8 +70,9 @@ class nova(
 
   File {
     require => Package['nova-common'],
-    owner   => 'nova',
+    owner   => 'root',
     group   => 'nova',
+    mode    => '750',
   }
 
   # TODO - see if these packages can be removed
@@ -128,6 +129,7 @@ class nova(
     mode    => '0751',
   }
   file { '/etc/nova/nova.conf':
+    owner => 'root',
     mode  => '0640',
   }
   file { '/etc/nova/rootwrap.conf':
