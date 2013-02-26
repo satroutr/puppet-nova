@@ -72,7 +72,7 @@ class nova(
     require => Package['nova-common'],
     owner   => 'root',
     group   => 'nova',
-    mode    => '750',
+    mode    => '775',
   }
 
   # TODO - see if these packages can be removed
@@ -126,7 +126,7 @@ class nova(
   }
   file { $logdir:
     ensure  => directory,
-    mode    => '0751',
+    mode    => '0771',
   }
   file { '/etc/nova/nova.conf':
     owner => 'root',
