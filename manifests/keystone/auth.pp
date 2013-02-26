@@ -1,6 +1,6 @@
 class nova::keystone::auth(
+  $password,
   $auth_name        = 'nova',
-  $password         = 'nova_password',
   $public_address   = '127.0.0.1',
   $admin_address    = '127.0.0.1',
   $internal_address = '127.0.0.1',
@@ -9,14 +9,20 @@ class nova::keystone::auth(
   $ec2_port         = '8773',
   $compute_version  = 'v2',
   $volume_version   = 'v1',
-  $region           = 'RegionOne'
+  $region           = 'RegionOne',
+  $tenant           = 'services',
+  $email            = 'nova@localhost',
+  $cinder           = false,
+  $public_protocol  = 'http'
 ) {
 
   keystone_user { $auth_name:
     ensure   => present,
     password => $password,
+    email    => $email,
+    tenant   => $tenant,
   }
-  keystone_user_role { "${auth_name}@services":
+  keystone_user_role { "${auth_name}@${tenant}":
     ensure  => present,
     roles   => 'admin',
   }
@@ -25,25 +31,29 @@ class nova::keystone::auth(
     type        => 'compute',
     description => "Openstack Compute Service",
   }
-  keystone_endpoint { $auth_name:
+  keystone_endpoint { "${region}/${auth_name}":
+# Replace the above with below to support Cisco OpenStack modules.
+#  keystone_endpoint { "${auth_name}":
     ensure       => present,
-    region       => $region,
-    public_url   => "http://${public_address}:${compute_port}/${compute_version}/%(tenant_id)s",
+    public_url   => "${public_protocol}://${public_address}:${compute_port}/${compute_version}/%(tenant_id)s",
     admin_url    => "http://${admin_address}:${compute_port}/${compute_version}/%(tenant_id)s",
     internal_url => "http://${internal_address}:${compute_port}/${compute_version}/%(tenant_id)s",
   }
 
-  keystone_service { "${auth_name}_volume":
-    ensure      => present,
-    type        => 'volume',
-    description => 'Volume Service',
-  }
-  keystone_endpoint { "${auth_name}_volume":
-    ensure       => present,
-    region       => $region,
-    public_url   => "http://${public_address}:${volume_port}/${volume_version}/%(tenant_id)s",
-    admin_url    => "http://${admin_address}:${volume_port}/${volume_version}/%(tenant_id)s",
-    internal_url => "http://${internal_address}:${volume_port}/${volume_version}/%(tenant_id)s",
+  if $cinder == false {
+    keystone_service { "${auth_name}_volume":
+      ensure      => present,
+      type        => 'volume',
+      description => 'Volume Service',
+    }
+    keystone_endpoint { "${region}/${auth_name}_volume":
+# Replace the above with below to support Cisco OpenStack modules.
+#    keystone_endpoint { "${auth_name}_volume":
+      ensure       => present,
+      public_url   => "${public_protocol}://${public_address}:${volume_port}/${volume_version}/%(tenant_id)s",
+      admin_url    => "http://${admin_address}:${volume_port}/${volume_version}/%(tenant_id)s",
+      internal_url => "http://${internal_address}:${volume_port}/${volume_version}/%(tenant_id)s",
+    }
   }
 
   keystone_service { "${auth_name}_ec2":
@@ -51,10 +61,11 @@ class nova::keystone::auth(
     type        => 'ec2',
     description => 'EC2 Service',
   }
-  keystone_endpoint { "${auth_name}_ec2":
+  keystone_endpoint { "${region}/${auth_name}_ec2":
+# Replace the above with below to support Cisco OpenStack modules.
+#  keystone_endpoint { "${auth_name}_ec2":
     ensure       => present,
-    region       => $region,
-    public_url   => "http://${public_address}:${ec2_port}/services/Cloud",
+    public_url   => "${public_protocol}://${public_address}:${ec2_port}/services/Cloud",
     admin_url    => "http://${admin_address}:${ec2_port}/services/Admin",
     internal_url => "http://${internal_address}:${ec2_port}/services/Cloud",
   }

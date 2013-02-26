@@ -10,31 +10,20 @@
 # [network_config]
 # [create_networks] Rather actual nova networks should be created using
 #   the fixed and floating ranges provided.
-# [quantum_ip_overlap] Disable the default firewall security groups in nova
 #
 class nova::network(
   $private_interface,
   $fixed_range,
   $public_interface = undef,
   $num_networks     = 1,
+  $network_size     = 255,
   $floating_range   = false,
   $enabled          = false,
   $network_manager  = 'nova.network.manager.FlatDHCPManager',
   $config_overrides = {},
   $create_networks  = true,
   $ensure_package   = 'present',
-  $install_service  = true,
-  $network_api_class	   = 'nova.network.quantumv2.api.API',
-  $quantum_url		   = 'http://127.0.0.1:9696',
-  $quantum_auth_strategy   = 'keystone',
-  $quantum_admin_tenant_name	= 'services',
-  $quantum_admin_username	= 'quantum',
-  $quantum_admin_password	= 'quantum',
-  $quantum_admin_auth_url	= 'http://127.0.0.1:35357/v2.0',
-  $quantum_ip_overlap           = true,
-  $libvirt_vif_driver	   = 'nova.virt.libvirt.vif.LibvirtOpenVswitchDriver',
-  $libvirt_use_virtio_for_bridges	= true,
-  $host		= 'compute',
+  $install_service  = true
 ) {
 
   include nova::params
@@ -54,6 +43,12 @@ class nova::network(
     nova_config { 'floating_range':   value => $floating_range }
   }
 
+  if has_key($config_overrides, 'vlan_start') {
+    $vlan_start = $config_overrides['vlan_start']
+  } else {
+    $vlan_start = undef
+  }
+
   if $install_service {
     nova::generic_service { 'network':
       enabled        => $enabled,
@@ -68,6 +63,8 @@ class nova::network(
     nova::manage::network { 'nova-vm-net':
       network       => $fixed_range,
       num_networks  => $num_networks,
+      network_size  => $network_size,
+      vlan_start    => $vlan_start,
     }
     if $floating_range {
       nova::manage::floating { 'nova-vm-floating':
@@ -106,19 +103,11 @@ class nova::network(
       $vlan_resource = { 'nova::network::vlan' => $resource_parameters }
       create_resources('class', $vlan_resource)
     }
+    # I don't think this is applicable to Folsom...
+    # If it is, the details will need changed. -jt
     'nova.network.quantum.manager.QuantumManager': {
       $parameters = { fixed_range      => $fixed_range,
                       public_interface => $public_interface,
-		      network_api_class	=> $network_api_class,
-    			quantum_url => $quantum_url,
-    			quantum_auth_strategy => $quantum_auth_strategy,
-    			quantum_admin_tenant_name => $quantum_admin_tenant_name,
-    			quantum_admin_username => $quantum_admin_username,
-    			quantum_admin_password => $quantum_admin_password,
-    			quantum_admin_auth_url => $quantum_admin_auth_url,
-  			quantum_ip_overlap => $quantum_ip_overlap,
-			libvirt_vif_driver => $libvirt_vif_driver,
-			libvirt_use_virtio_for_bridges => $libvirt_use_virtio_for_bridges,	
                     }
       $resource_parameters = merge($config_overrides, $parameters)
       $quantum_resource = { 'nova::network::quantum' => $resource_parameters }

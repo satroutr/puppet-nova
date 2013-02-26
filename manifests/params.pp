@@ -5,19 +5,19 @@ class nova::params {
   case $::osfamily {
     'RedHat': {
       # package names
-      $api_package_name         = false
-      $cert_package_name        = false
-      $common_package_name      = 'openstack-nova'
-      $compute_package_name     = false
-      $consoleauth_package_name = false
+      $api_package_name         = 'openstack-nova-api'
+      $cert_package_name        = 'openstack-nova-cert'
+      $common_package_name      = 'openstack-nova-common'
+      $compute_package_name     = 'openstack-nova-compute'
+      $consoleauth_package_name = 'openstack-nova-console'
       $doc_package_name         = 'openstack-nova-doc'
       $libvirt_package_name     = 'libvirt'
-      $network_package_name     = false
+      $network_package_name     = 'openstack-nova-network'
       $numpy_package_name       = 'numpy'
-      $objectstore_package_name = false
-      $scheduler_package_name   = false
+      $objectstore_package_name = 'openstack-nova-objectstore'
+      $scheduler_package_name   = 'openstack-nova-scheduler'
       $tgt_package_name         = 'scsi-target-utils'
-      $volume_package_name      = false
+      $volume_package_name      = 'openstack-nova-volume'
       $vncproxy_package_name    = 'openstack-nova-novncproxy'
       # service names
       $api_service_name         = 'openstack-nova-api'
@@ -33,9 +33,10 @@ class nova::params {
       $volume_service_name      = 'openstack-nova-volume'
       $special_service_provider = 'init'
       # redhat specific config defaults
-      $root_helper              = 'sudo nova-rootwrap /etc/nova/rootwrap.conf'
+      $root_helper              = 'sudo nova-rootwrap'
       $lock_path                = '/var/lib/nova/tmp'
-      $nova_db_charset          = 'latin1'
+      # Hard-coding charset per http://projects.puppetlabs.com/issues/14273
+      #$nova_db_charset          = 'latin1'
     }
     'Debian': {
       # package names
@@ -46,10 +47,8 @@ class nova::params {
       $doc_package_name         = 'nova-doc'
       $libvirt_package_name     = 'libvirt-bin'
       $network_package_name     = 'nova-network'
-      $vncproxy_package_name    = 'nova-novncproxy'
+      $vncproxy_package_name    = ['novnc', 'nova-novncproxy']
       $numpy_package_name       = 'python-numpy'
-      $novnc_package_name       = 'novnc'
-      $python_novnc_package_name = 'python-novnc'
       $objectstore_package_name = 'nova-objectstore'
       $scheduler_package_name   = 'nova-scheduler'
       $tgt_package_name         = 'tgt'
@@ -67,9 +66,10 @@ class nova::params {
       $volume_service_name      = 'nova-volume'
       $tgt_service_name         = 'tgt'
       # debian specific nova config
-      $root_helper              = 'sudo nova-rootwrap /etc/nova/rootwrap.conf'
+      $root_helper              = 'sudo nova-rootwrap'
       $lock_path                = '/var/lock/nova'
-      $nova_db_charset          = 'latin1'
+      # Hard-coding charset per http://projects.puppetlabs.com/issues/14273
+      #$nova_db_charset          = 'latin1'
       case $::operatingsystem {
         'Debian': {
           $consoleauth_package_name = 'nova-console'

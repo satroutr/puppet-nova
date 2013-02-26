@@ -1,3 +1,6 @@
+#
+# configures nova vnc proxy
+#
 class nova::vncproxy(
   $enabled        = false,
   $host           = '0.0.0.0',
@@ -19,19 +22,6 @@ class nova::vncproxy(
   package { 'python-numpy':
     name   => $::nova::params::numpy_package_name,
     ensure => present,
-    tag    => "openstack",
-  }
-
-  package { 'python-novnc':
-    name   => $::nova::params::python_novnc_package_name,
-    ensure => present,
-    tag    => "openstack",
-  }
-
-  package { 'novnc':
-    name   => $::nova::params::novnc_package_name,
-    ensure => present,
-    tag    => "openstack",
   }
 
   nova::generic_service { 'vncproxy':
@@ -39,9 +29,7 @@ class nova::vncproxy(
     package_name   => $::nova::params::vncproxy_package_name,
     service_name   => $::nova::params::vncproxy_service_name,
     ensure_package => $ensure_package,
-    require        => [Package['python-numpy'],
-      Package['python-novnc'],
-      Package['novnc'],],
+    require        => Package['python-numpy']
   }
 
 }

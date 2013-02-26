@@ -5,7 +5,7 @@
 #
 # [sql_connection] Connection url to use to connect to nova sql database.
 #  If specified as false, then it tries to collect the exported resource
-#   Nova_config <<| title == 'sql_connection' |>>. Optional. Defaults to false. 
+#   Nova_config <<| title == 'sql_connection' |>>. Optional. Defaults to false.
 # [image_service] Service used to search for and retrieve images. Optional.
 #   Defaults to 'nova.image.local.LocalImageService'
 # [glance_api_servers] List of addresses for api servers. Optional.
@@ -27,9 +27,7 @@
 # [report_interval] Interval at which nodes report to data store. Optional.
 #    Defaults to '10'.
 # [root_helper] Command used for roothelper. Optional. Distro specific.
-# [monitoring_notifications] A boolean specifying whether or not to send system
-#    usage data notifications out on the message queue. Optional, false by default.
-#    Only valid for stable/essex.
+# [monitoring_notifications] A boolean specifying whether or not to send system usage data notifications out on the message queue. Optional, false by default. Only valid for stable/essex.
 #
 class nova(
   # this is how to query all resources from our clutser
@@ -39,6 +37,7 @@ class nova(
   # these glance params should be optional
   # this should probably just be configured as a glance client
   $glance_api_servers = 'localhost:9292',
+  $rpc_backend = 'nova.rpc.impl_kombu',
   $rabbit_host = 'localhost',
   $rabbit_password='guest',
   $rabbit_port='5672',
@@ -52,20 +51,18 @@ class nova(
   $verbose = false,
   $periodic_interval = '60',
   $report_interval = '10',
-  $root_helper = $::nova::params::root_helper,
-  $monitoring_notifications = false,
-  $prevent_db_sync = false
+  $rootwrap_config = '/etc/nova/rootwrap.conf',
+  # deprecated in folsom
+  #$root_helper = $::nova::params::root_helper,
+  $monitoring_notifications = false
 ) inherits nova::params {
 
   # all nova_config resources should be applied
   # after the nova common package
   # before the file resource for nova.conf is managed
   # and before the post config resource
-  Nova_config<| |> {
-    require +> Package['nova-common'],
-    before  +> File['/etc/nova/nova.conf'],
-    notify  +> Exec['post-nova_config']
-  }
+  Package['nova-common'] -> Nova_config<| |> -> File['/etc/nova/nova.conf']
+  Nova_config<| |> ~> Exec['post-nova_config']
 
   File {
     require => Package['nova-common'],
@@ -77,12 +74,10 @@ class nova(
   # they should be handled as package deps by the OS
   package { 'python':
     ensure => present,
-    tag    => "openstack",
   }
   package { 'python-greenlet':
     ensure => present,
     require => Package['python'],
-    tag    => "openstack",
   }
 
   class { 'nova::utilities': }
@@ -93,16 +88,13 @@ class nova(
 
   package { "python-nova":
     ensure  => present,
-    require => Package["python-greenlet"],
-    notify => Exec[nova-db-sync],
-    tag    => "openstack",
+    require => Package["python-greenlet"]
   }
 
   package { 'nova-common':
     name    => $::nova::params::common_package_name,
     ensure  => present,
-    require => [Package["python-nova"], Anchor['nova-start']],
-    tag    => "openstack",
+    require => [Package["python-nova"], Anchor['nova-start']]
   }
 
   group { 'nova':
@@ -125,28 +117,6 @@ class nova(
     mode  => '0640',
   }
 
-  # I need to ensure that I better understand this resource
-  # this is potentially constantly resyncing a central DB
-  if ($prevent_db_sync) {
-    exec { "nova-db-sync":
-      command => "/bin/true",
-      refreshonly => true,
-    }
-  } else {
-    exec { "nova-db-sync":
-      command     => "/usr/bin/nova-manage db sync",
-      require => [File['/etc/nova/nova.conf'],
-                  Package[python-nova],
-                  Nova_config['sql_connection'],
-                  Package[$::nova::params::common_package_name]],
-      refreshonly => true,
-    }
-  }
-
-  Nova_config <| title == 'sql_connection' |> {
-    notify +> Exec["nova-db-sync"]
-  }
-
   # used by debian/ubuntu in nova::network_bridge to refresh
   # interfaces based on /etc/network/interfaces
   exec { "networking-refresh":
@@ -158,6 +128,15 @@ class nova(
   # both the sql_connection and rabbit_host are things
   # that may need to be collected from a remote host
   if $sql_connection {
+    if($sql_connection =~ /mysql:\/\/\S+:\S+@\S+\/\S+/) {
+      require 'mysql::python'
+    } elsif($sql_connection =~ /postgresql:\/\/\S+:\S+@\S+\/\S+/) {
+
+    } elsif($sql_connection =~ /sqlite:\/\//) {
+
+    } else {
+      fail("Invalid db connection ${sql_connection}")
+    }
     nova_config { 'sql_connection': value => $sql_connection }
   } else {
     Nova_config <<| title == 'sql_connection' |>>
@@ -176,35 +155,30 @@ class nova(
 
   nova_config { 'auth_strategy': value => $auth_strategy }
 
-  if $auth_strategy == 'keystone' {
-    nova_config { 'use_deprecated_auth': value => false }
-  } else {
-    nova_config { 'use_deprecated_auth': value => true }
-  }
-
-
   if $rabbit_host {
     nova_config { 'rabbit_host': value => $rabbit_host }
   } else {
     Nova_config <<| title == 'rabbit_host' |>>
   }
-  # I may want to support exporting and collecting these
-  nova_config {
-    'rabbit_password': value => $rabbit_password;
-    'rabbit_port': value => $rabbit_port;
-    'rabbit_userid': value => $rabbit_userid;
-    'rabbit_virtual_host': value => $rabbit_virtual_host;
+
+  if $rpc_backend == 'nova.rpc.impl_kombu' {
+    nova_config {
+      'rabbit_password':     value => $rabbit_password;
+      'rabbit_port':         value => $rabbit_port;
+      'rabbit_userid':       value => $rabbit_userid;
+      'rabbit_virtual_host': value => $rabbit_virtual_host;
+    }
   }
 
-
   nova_config {
-    'verbose': value => $verbose;
-    'logdir': value => $logdir;
+    'verbose':           value => $verbose;
+    'logdir':            value => $logdir;
     # Following may need to be broken out to different nova services
-    'state_path': value => $state_path;
-    'lock_path': value => $lock_path;
+    'state_path':        value => $state_path;
+    'lock_path':         value => $lock_path;
+    'rpc_backend':         value => $rpc_backend;
     'service_down_time': value => $service_down_time;
-    'root_helper': value => $root_helper;
+    'rootwrap_config':  value => $rootwrap_config;
   }
 
 

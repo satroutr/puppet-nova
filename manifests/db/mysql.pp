@@ -3,11 +3,12 @@
 #
 class nova::db::mysql(
   $password,
-  $dbname = 'nova',
-  $user = 'nova',
-  $host = '127.0.0.1',
+  $dbname 	 = 'nova',
+  $user 	 = 'nova',
+  $host 	 = '127.0.0.1',
+  $charset       = 'latin1',
   $allowed_hosts = undef,
-  $cluster_id = 'localzone'
+  $cluster_id    = 'localzone'
 ) {
 
   include 'nova::params'
@@ -21,7 +22,9 @@ class nova::db::mysql(
     user         => $user,
     password     => $password,
     host         => $host,
-    charset      => $nova::params::nova_db_charset,
+    # Hard-coding charset per http://projects.puppetlabs.com/issues/14273
+    #charset      => $nova::params::nova_db_charset,
+    charset      => $charset,
     # I may want to inject some sql
     require      => Class['mysql::config'],
   }
