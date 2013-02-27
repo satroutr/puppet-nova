@@ -26,7 +26,8 @@
 #   Defaults to '60'.
 # [report_interval] Interval at which nodes report to data store. Optional.
 #    Defaults to '10'.
-# [root_helper] Command used for roothelper. Optional. Distro specific.
+# [root_helper] Command used for roothelper. Optional. Distro specific. Depricated after Folsom.2
+# [rootwrap_config] Path to rootwrap filter list (file). Needed Folsom.2 and beyond. 
 # [monitoring_notifications] A boolean specifying whether or not to send system
 #    usage data notifications out on the message queue. Optional, false by default.
 #    Only valid for stable/essex.
@@ -52,7 +53,7 @@ class nova(
   $verbose = false,
   $periodic_interval = '60',
   $report_interval = '10',
-  $root_helper = $::nova::params::root_helper,
+  $rootwrap_config = $::nova::params::rootwrap_config,
   $monitoring_notifications = false,
   $prevent_db_sync = false
 ) inherits nova::params {
@@ -69,8 +70,9 @@ class nova(
 
   File {
     require => Package['nova-common'],
-    owner   => 'nova',
+    owner   => 'root',
     group   => 'nova',
+    mode    => '775',
   }
 
   # TODO - see if these packages can be removed
@@ -112,18 +114,30 @@ class nova(
   }
   user { 'nova':
     ensure  => present,
-    gid     => 'nova',
+    gid   => 'nova',
     system  => true,
     require => Package['nova-common'],
   }
-
+  file { "/etc/nova":
+    ensure => directory,
+    mode => '750',
+    owner => 'root',
+    group   => 'nova',
+  }
   file { $logdir:
     ensure  => directory,
-    mode    => '0751',
+    mode    => '0771',
   }
   file { '/etc/nova/nova.conf':
+    owner => 'root',
     mode  => '0640',
   }
+  file { '/etc/nova/rootwrap.conf':
+    ensure => present,
+    content => template('nova/rootwrap.conf.erb'),
+    require => [File['/etc/nova/nova.conf'],File['/etc/nova']],
+  }
+
 
   # I need to ensure that I better understand this resource
   # this is potentially constantly resyncing a central DB
@@ -204,7 +218,7 @@ class nova(
     'state_path': value => $state_path;
     'lock_path': value => $lock_path;
     'service_down_time': value => $service_down_time;
-    'root_helper': value => $root_helper;
+    'rootwrap_config': value => $rootwrap_config;
   }
 
 

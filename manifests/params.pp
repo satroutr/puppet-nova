@@ -34,6 +34,7 @@ class nova::params {
       $special_service_provider = 'init'
       # redhat specific config defaults
       $root_helper              = 'sudo nova-rootwrap /etc/nova/rootwrap.conf'
+      $rootwrap_config          = '/etc/nova/rootwrap.conf'
       $lock_path                = '/var/lib/nova/tmp'
       $nova_db_charset          = 'latin1'
     }
@@ -68,6 +69,7 @@ class nova::params {
       $tgt_service_name         = 'tgt'
       # debian specific nova config
       $root_helper              = 'sudo nova-rootwrap /etc/nova/rootwrap.conf'
+      $rootwrap_config          = '/etc/nova/rootwrap.conf'
       $lock_path                = '/var/lock/nova'
       $nova_db_charset          = 'latin1'
       case $::operatingsystem {
