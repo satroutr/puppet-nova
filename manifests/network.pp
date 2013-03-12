@@ -17,6 +17,7 @@ class nova::network(
   $fixed_range,
   $public_interface = undef,
   $num_networks     = 1,
+  $network_size     = 255,
   $floating_range   = false,
   $enabled          = false,
   $network_manager  = 'nova.network.manager.FlatDHCPManager',
@@ -54,6 +55,12 @@ class nova::network(
     nova_config { 'floating_range':   value => $floating_range }
   }
 
+  if has_key($config_overrides, 'vlan_start') {
+    $vlan_start = $config_overrides['vlan_start']
+  } else {
+    $vlan_start = undef
+  }
+
   if $install_service {
     nova::generic_service { 'network':
       enabled        => $enabled,
@@ -68,6 +75,8 @@ class nova::network(
     nova::manage::network { 'nova-vm-net':
       network       => $fixed_range,
       num_networks  => $num_networks,
+      network_size  => $network_size,
+      vlan_start    => $vlan_start,
     }
     if $floating_range {
       nova::manage::floating { 'nova-vm-floating':
@@ -106,6 +115,8 @@ class nova::network(
       $vlan_resource = { 'nova::network::vlan' => $resource_parameters }
       create_resources('class', $vlan_resource)
     }
+    # I don't think this is applicable to Folsom...
+    # If it is, the details will need changed. -jt
     'nova.network.quantum.manager.QuantumManager': {
       $parameters = { fixed_range      => $fixed_range,
                       public_interface => $public_interface,

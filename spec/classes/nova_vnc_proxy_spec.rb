@@ -24,11 +24,11 @@ describe 'nova::vncproxy' do
     it { should contain_nova_config('novncproxy_port').with(:value => '6080') }
 
     it { should contain_package('nova-vncproxy').with(
-      :name   => 'novnc',
+      :name   => ["novnc", "nova-novncproxy"],
       :ensure => 'present'
     ) }
     it { should contain_service('nova-vncproxy').with(
-      :name   => 'novnc',
+      :name   => 'nova-novncproxy',
       :ensure => 'running'
     )}
 
@@ -41,6 +41,20 @@ describe 'nova::vncproxy' do
       )}
     end
 
+  end
+
+  describe 'on debian OS' do
+      let :facts do
+        { :osfamily => 'Debian', :operatingsystem => 'Debian' }
+      end
+      it { should contain_package('nova-vncproxy').with(
+        :name   => "novnc",
+        :ensure => 'present'
+      )}
+      it { should contain_service('nova-vncproxy').with(
+        :name   => 'novnc',
+        :ensure => 'running'
+      )}
   end
 
 
