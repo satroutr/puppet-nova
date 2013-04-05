@@ -38,6 +38,10 @@ class nova::compute(
     tag    => "openstack",
   }
 
+  package { 'genisoimage':
+    ensure => present,
+  }
+
   nova::generic_service { 'compute':
     enabled        => $enabled,
     package_name   => $::nova::params::compute_package_name,
