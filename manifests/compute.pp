@@ -32,19 +32,22 @@ class nova::compute(
     'vncserver_proxyclient_address': value => $vncserver_proxyclient_address;
   }
 
-  # See launchpad bug 994476 and 1167550
-  package { 'pm-utils':
-    ensure => present,
-  }
-
   package { 'bridge-utils':
     ensure => present,
     before => Nova::Generic_service['compute'],
     tag    => "openstack",
   }
 
-  package { 'genisoimage':
+  # See launchpad bug 994476 and 1167550
+  package { ['pm-utils', 'genisoimage', 'guestmount']:
     ensure => present,
+  }
+
+  # create "supermin appliance" required by libguestfs
+  exec { "supermin_create":
+      command => "update-guestfs-appliance",
+      path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin',],
+      require => Package["guestmount"],
   }
 
   nova::generic_service { 'compute':
