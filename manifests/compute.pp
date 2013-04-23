@@ -39,12 +39,15 @@ class nova::compute(
   }
 
   # See launchpad bug 994476 and 1167550
-  package { 'pm-utils':
+  package { ['pm-utils', 'genisoimage', 'guestmount']:
     ensure => present,
   }
 
-  package { 'genisoimage':
-    ensure => present,
+  # create "supermin appliance" required by libguestfs
+  exec { "supermin_create":
+      command => "update-guestfs-appliance",
+      path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin',],
+      require => Package["guestmount"],
   }
 
   nova::generic_service { 'compute':
