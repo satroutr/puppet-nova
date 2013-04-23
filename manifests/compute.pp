@@ -38,6 +38,11 @@ class nova::compute(
     tag    => "openstack",
   }
 
+  # See launchpad bug 994476 and 1167550
+  package { 'pm-utils':
+    ensure => present,
+  }
+
   package { 'genisoimage':
     ensure => present,
   }
