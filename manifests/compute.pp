@@ -29,7 +29,10 @@ class nova::compute (
     'DEFAULT/vnc_enabled':                   value => $vnc_enabled;
     'DEFAULT/vncserver_proxyclient_address': value => $vncserver_proxyclient_address;
   }
-
+  # See launchpad bug 1208974
+  package { 'pm-utils':
+    ensure => present,
+  }
   package { 'bridge-utils':
     ensure => present,
     before => Nova::Generic_service['compute'],
